@@ -29,18 +29,20 @@ monorepo/
 - HTTP API for invoice management
 - Uses module-a for billing calculations
 - Integrates with payment processing
+- Runs on port 8080
 
 ### Service B: Payment Webhook Handler
 - Processes payment gateway callbacks
 - Uses module-b for payment operations
 - Logs transaction results
+- Runs on port 8081
 
 ## API Examples
 
 ### Service A: Billing API
 
 #### Create an Invoice
-```bash
+```sh
 curl --request POST \
   --url http://localhost:8080/api/invoices \
   --header 'Content-Type: application/json' \
@@ -53,7 +55,7 @@ curl --request POST \
 ```
 
 #### Get an Invoice
-```bash
+```sh
 curl --request GET \
   --url http://localhost:8080/api/invoices/inv_123
 ```
@@ -61,7 +63,7 @@ curl --request GET \
 ### Service B: Payment Webhook Handler
 
 #### Send a Payment Webhook Notification
-```bash
+```sh
 curl --request POST \
   --url http://localhost:8081/api/webhooks/payment \
   --header 'Content-Type: application/json' \
@@ -78,18 +80,22 @@ curl --request POST \
 ### Module A: Billing Helpers
 - Billing calculation utilities
 - Depends on module-b for payments
+- Used by Service A
 
 ### Module B: Payment SDK
 - Payment gateway integration
 - Used by both services
+- Provides payment processing functionality
 
 ### Logger
 - Shared logging utilities
 - Used across all services and modules
+- Provides consistent logging format
 
 ### DB
 - Database access utilities
 - Common database operations
+- Connection pooling and management
 
 ## Development
 
@@ -97,14 +103,23 @@ This is a demonstration project and not intended for production use. The code co
 
 ## Available Tasks
 
-The project uses [Task](https://taskfile.dev/) for managing common development tasks. Here are the available commands:
+The project uses [Task](https://taskfile.dev/) for managing common development tasks. The tasks are convention-based and will automatically discover any services added to the project.
 
-```bash
+### Development Setup
+
+```sh
 # Install development dependencies (including linter)
 task deps
+```
 
+### Common Tasks
+
+```sh
 # Run all tests
 task test
+
+# Run tests with coverage report
+task test-coverage
 
 # Run linter
 task lint
@@ -112,16 +127,23 @@ task lint
 # Build all services
 task build
 
-# Clean build artifacts
+# Build a specific service
+task build-service SERVICE=service-a
+
+# Run a specific service
+task run SERVICE=service-a
+
+# List available services
+task list
+
+# Clean build artifacts and coverage reports
 task clean
 ```
 
-Each service will be built into the `bin/` directory. The services can be run directly from there:
+### Service Conventions
 
-```bash
-# Run Service A (Billing API)
-./bin/service-a serve
+The project follows these conventions for services:
 
-# Run Service B (Payment Webhook Handler)
-./bin/service-b serve
-```
+1. All services must be placed in the `services/` directory
+2. Each service must have a `cmd/` directory containing its main package
+3. Services are built into the `bin/` directory with their directory name as the binary name

@@ -1,5 +1,11 @@
 version: '3'
 
+vars:
+  SERVICES_DIR: services
+  BIN_DIR: bin
+  COVERAGE_OUT: coverage.out
+  COVERAGE_HTML: coverage.html
+
 tasks:
   deps:
     desc: Install development dependencies
@@ -11,6 +17,13 @@ tasks:
     cmds:
       - go test ./...
 
+  test-coverage:
+    desc: Run tests with coverage report
+    cmds:
+      - go test -coverprofile={{.COVERAGE_OUT}} ./...
+      - go tool cover -html={{.COVERAGE_OUT}} -o {{.COVERAGE_HTML}}
+      - echo "Coverage report generated at {{.COVERAGE_HTML}}"
+
   lint:
     desc: Run linter
     cmds:
@@ -19,10 +32,33 @@ tasks:
   build:
     desc: Build all services
     cmds:
-      - go build -o bin/service-a ./services/service-a/cmd
-      - go build -o bin/service-b ./services/service-b/cmd
+      - go build -o {{.BIN_DIR}}/service-a ./{{.SERVICES_DIR}}/service-a/cmd
+      - go build -o {{.BIN_DIR}}/service-b ./{{.SERVICES_DIR}}/service-b/cmd
+
+  build-service:
+    desc: Build a specific service
+    requires:
+      vars: [SERVICE]
+    cmds:
+      - echo "Building service {{.SERVICE}}"
+      - go build -o {{.BIN_DIR}}/{{.SERVICE}} ./{{.SERVICES_DIR}}/{{.SERVICE}}/cmd
 
   clean:
     desc: Clean build artifacts
     cmds:
-      - rm -rf bin/ 
+      - rm -rf {{.BIN_DIR}}/
+      - rm -f {{.COVERAGE_OUT}} {{.COVERAGE_HTML}}
+
+  list:
+    desc: List available services
+    cmds:
+      - ls -d {{.SERVICES_DIR}}/*/ | xargs -n1 basename
+
+  run:
+    desc: Run a specific service
+    deps: [build-service]
+    requires:
+      vars: [SERVICE]
+    cmds:
+      - echo "Running service {{.SERVICE}}"
+      - ./{{.BIN_DIR}}/{{.SERVICE}} serve
