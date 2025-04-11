@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  ACTIONS_STEP_DEBUG: true
+
 jobs:
   discover-services:
     name: Discover Services
@@ -55,6 +58,7 @@ jobs:
           git fetch origin master
           CHANGED=$(git diff --name-only origin/master...${{ github.sha }} | tr '\n' ' ')
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          echo "changed=$CHANGED"
 
       - name: Generate dependency graph
         id: graph
@@ -62,6 +66,7 @@ jobs:
           GRAPH=$(task deps-graph:ci | grep "services/${{ matrix.service }}" || true)
           CLEANED=$(echo "$GRAPH" | tr '\n' ' ' | sed 's/  */ /g')
           echo "graph=$CLEANED" >> $GITHUB_OUTPUT
+          echo "graph=$CLEANED"
 
       - name: Determine if affected
         id: affected
@@ -74,6 +79,7 @@ jobs:
             fi
           done
           echo "affected=$AFFECTED" >> $GITHUB_OUTPUT
+          echo "affected=$AFFECTED"
           echo "Service ${{ matrix.service }} affected: $AFFECTED"
 
       - name: Report and skip if not affected
