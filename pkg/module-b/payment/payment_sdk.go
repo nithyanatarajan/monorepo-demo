@@ -12,7 +12,6 @@ import (
 type PaymentStatus string
 
 const (
-	StatusNew       PaymentStatus = "new"
 	StatusPending   PaymentStatus = "pending"
 	StatusCompleted PaymentStatus = "completed"
 	StatusFailed    PaymentStatus = "failed"
