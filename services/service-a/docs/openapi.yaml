@@ -1,0 +1,50 @@
+openapi: 3.0.0
+info:
+  title: Billing Service API
+  version: 1.0.0
+  description: API for managing invoices and payments
+
+paths:
+  /api/invoices:
+    post:
+      summary: Create a new invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: float
+                currency:
+                  type: string
+                  example: USD
+      responses:
+        '201':
+          description: Invoice created successfully
+    get:
+      summary: Get an invoice
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  amount:
+                    type: number
+                  currency:
+                    type: string
+                  status:
+                    type: string 

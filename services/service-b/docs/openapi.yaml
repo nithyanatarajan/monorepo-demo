@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  title: Payment Webhook Service API
+  version: 1.0.0
+  description: API for processing payment webhooks
+
+paths:
+  /api/webhooks/payment:
+    post:
+      summary: Process payment webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  example: payment.completed
+                data:
+                  type: object
+                  properties:
+                    payment_id:
+                      type: string
+                    amount:
+                      type: number
+                    currency:
+                      type: string
+      responses:
+        '200':
+          description: Webhook processed successfully 

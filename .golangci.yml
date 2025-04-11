@@ -1,0 +1,31 @@
+linters:
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+
+linters-settings:
+  gofmt:
+    simplify: true
+  govet:
+    shadow: true
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  staticcheck:
+    checks: ["all"]
+
+run:
+  deadline: 5m
+  tests: true
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+  exclude-dirs:
+    - vendor
+    - .git
+    - .github
