@@ -39,7 +39,7 @@ tasks:
   build-service:
     desc: Build a specific service
     requires:
-      vars: [SERVICE]
+      vars: [ SERVICE ]
     cmds:
       - echo "Building service {{.SERVICE}}"
       - go build -o {{.BIN_DIR}}/{{.SERVICE}} ./{{.SERVICES_DIR}}/{{.SERVICE}}/cmd
@@ -57,9 +57,9 @@ tasks:
 
   run:
     desc: Run a specific service
-    deps: [build-service]
+    deps: [ build-service ]
     requires:
-      vars: [SERVICE]
+      vars: [ SERVICE ]
     cmds:
       - echo "Running service {{.SERVICE}}"
       - ./{{.BIN_DIR}}/{{.SERVICE}} serve
@@ -74,3 +74,13 @@ tasks:
         jq -r 'select(.Imports | length > 0) | .ImportPath + " -> " + (.Imports | map(select(startswith("{{.MODULE_NAME}}"))) | join(", "))' | \
         sed "s|{{.MODULE_NAME}}/||g" | \
         grep -v " -> $"
+
+  deps-graph:ci:
+    desc: Show internal dependency graph (CI-safe)
+    cmds:
+      - |
+        echo "Internal Dependency Graph (tab-separated flat list):"
+        go list -json ./... | \
+        jq -r 'select(.Imports | length > 0) | .ImportPath as $src | .Imports[] | select(startswith("{{.MODULE_NAME}}")) | "\($src)\t\(. )"' | \
+        sed "s|{{.MODULE_NAME}}/||g" | \
+        grep -v "^$"

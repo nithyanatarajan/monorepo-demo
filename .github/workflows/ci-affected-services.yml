@@ -62,8 +62,9 @@ jobs:
       - name: Generate dependency graph
         id: graph
         run: |
-          GRAPH=$(task deps-graph | grep "services/${{ matrix.service }}" || true)
-          echo "graph=$GRAPH" >> $GITHUB_OUTPUT
+          GRAPH=$(task deps-graph:ci | grep "services/${{ matrix.service }}" || true)
+          CLEANED=$(echo "$GRAPH" | tr '\n' ' ' | sed 's/  */ /g')
+          echo "graph=$CLEANED" >> $GITHUB_OUTPUT
 
       - name: Determine if affected
         id: affected
