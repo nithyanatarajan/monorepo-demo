@@ -5,6 +5,7 @@ vars:
   BIN_DIR: bin
   COVERAGE_OUT: coverage.out
   COVERAGE_HTML: coverage.html
+  MODULE_NAME: github.com/nithyanatarajan/monorepo-demo
 
 tasks:
   deps:
@@ -62,3 +63,14 @@ tasks:
     cmds:
       - echo "Running service {{.SERVICE}}"
       - ./{{.BIN_DIR}}/{{.SERVICE}} serve
+
+  deps-graph:
+    desc: Show internal dependency graph
+    cmds:
+      - |
+        echo "Internal Dependency Graph:"
+        echo "-------------------------"
+        go list -json ./... | \
+        jq -r 'select(.Imports | length > 0) | .ImportPath + " -> " + (.Imports | map(select(startswith("{{.MODULE_NAME}}"))) | join(", "))' | \
+        sed "s|{{.MODULE_NAME}}/||g" | \
+        grep -v " -> $"

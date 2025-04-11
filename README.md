@@ -136,6 +136,9 @@ task run SERVICE=service-a
 # List available services
 task list
 
+# Show internal dependency graph
+task deps-graph
+
 # Clean build artifacts and coverage reports
 task clean
 ```
@@ -147,3 +150,29 @@ The project follows these conventions for services:
 1. All services must be placed in the `services/` directory
 2. Each service must have a `cmd/` directory containing its main package
 3. Services are built into the `bin/` directory with their directory name as the binary name
+
+### Dependency Graph
+
+The project provides a command to visualize internal dependencies between packages:
+
+```sh
+task deps-graph
+```
+
+This will show a graph of internal dependencies in the format:
+```
+package -> dependency1, dependency2, ...
+```
+
+For example:
+```
+pkg/module-a/billing -> pkg/logger, pkg/module-b/payment
+pkg/module-b/payment -> pkg/logger
+services/service-a/api/handlers -> pkg/logger, pkg/module-a/billing
+```
+
+This helps visualize how packages depend on each other within the monorepo, making it easier to:
+- Understand the architecture
+- Identify potential circular dependencies
+- Plan refactoring efforts
+- Maintain clean package boundaries
