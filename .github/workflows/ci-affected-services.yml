@@ -17,6 +17,8 @@ jobs:
       services: ${{ steps.set.outputs.services }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Discover services (JSON array)
         id: set
@@ -36,6 +38,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -55,10 +59,15 @@ jobs:
       - name: Detect changed files
         id: changed
         run: |
-          git fetch origin master
-          CHANGED=$(git diff --name-only origin/master...${{ github.sha }} | tr '\n' ' ')
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA=$(git rev-parse HEAD~1)
+          fi
+
+          CHANGED=$(git diff --name-only "$BASE_SHA" HEAD | tr '\n' ' ')
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
-          echo "changed=$CHANGED"
+          echo "Changed files: $CHANGED"
 
       - name: Generate dependency graph
         id: graph
@@ -66,14 +75,20 @@ jobs:
           GRAPH=$(task deps-graph:ci | grep "services/${{ matrix.service }}" || true)
           CLEANED=$(echo "$GRAPH" | tr '\n' ' ' | sed 's/  */ /g')
           echo "graph=$CLEANED" >> $GITHUB_OUTPUT
-          echo "graph=$CLEANED"
+          echo "graph: $CLEANED"
 
       - name: Determine if affected
         id: affected
         run: |
           AFFECTED=false
-          for file in ${{ steps.changed.outputs.changed }}; do
-            if [[ "$file" == services/${{ matrix.service }}/* ]] || echo "${{ steps.graph.outputs.graph }}" | grep -q "$file"; then
+          IFS=' ' read -r -a FILES <<< "${{ steps.changed.outputs.changed }}"
+          for file in "${FILES[@]}"; do
+            DIR=$(dirname "$file")
+            if [[ "$DIR" == services/${{ matrix.service }}/* ]]; then
+              AFFECTED=true
+              break
+            fi
+            if [[ "${{ steps.graph.outputs.graph }}" == *"$DIR"* ]]; then
               AFFECTED=true
               break
             fi
