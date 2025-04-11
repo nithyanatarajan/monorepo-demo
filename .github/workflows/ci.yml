@@ -33,7 +33,7 @@ jobs:
       - name: Run linter
         run: task lint
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: task test-coverage
 
       - name: Build services

@@ -1,0 +1,94 @@
+name: Affected CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  discover-services:
+    name: Discover Services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Discover services (JSON array)
+        id: set
+        run: |
+          SERVICES=$(ls services | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+          echo "Discovered: $SERVICES"
+
+  test-build-affected:
+    name: Lint, Test and Build Affected
+    needs: discover-services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJSON(needs.discover-services.outputs.services) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Detect changed files
+        id: changed
+        run: |
+          git fetch origin master
+          CHANGED=$(git diff --name-only origin/master...${{ github.sha }} | tr '\n' ' ')
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+
+      - name: Generate dependency graph
+        id: graph
+        run: |
+          GRAPH=$(task deps-graph | grep "services/${{ matrix.service }}" || true)
+          echo "graph=$GRAPH" >> $GITHUB_OUTPUT
+
+      - name: Determine if affected
+        id: affected
+        run: |
+          AFFECTED=false
+          for file in ${{ steps.changed.outputs.changed }}; do
+            if [[ "$file" == services/${{ matrix.service }}/* ]] || echo "${{ steps.graph.outputs.graph }}" | grep -q "$file"; then
+              AFFECTED=true
+              break
+            fi
+          done
+          echo "affected=$AFFECTED" >> $GITHUB_OUTPUT
+          echo "Service ${{ matrix.service }} affected: $AFFECTED"
+
+      - name: Skip if not affected
+        if: steps.affected.outputs.affected != 'true'
+        run: |
+          echo "Service ${{ matrix.service }} not affected. Skipping."
+          exit 78
+
+      - name: Run linter
+        run: task lint
+
+      - name: Run tests with coverage
+        run: task test-coverage
+
+      - name: Build service
+        run: task build-service SERVICE=${{ matrix.service }}
