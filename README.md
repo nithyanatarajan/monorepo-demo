@@ -1,12 +1,17 @@
 # Go Monorepo Demo
 
-This is a demonstration monorepo showcasing a microservices architecture with shared libraries. The project is structured to illustrate:
+![CI](https://github.com/nithyanatarajan/monorepo-demo/actions/workflows/ci.yml/badge.svg)
+![Affected Services CI](https://github.com/nithyanatarajan/monorepo-demo/actions/workflows/ci-affected-services.yml/badge.svg)
 
-- Service isolation and boundaries
-- Shared library usage
-- Dependency management
-- Testing organization
-- Mock generation
+A Go-based monorepo demonstrating smart microservice deployment with Taskfile-driven workflows and dependency-aware CI.
+
+This project illustrates a modular microservices architecture with:
+
+- Clear service boundaries and isolated domains
+- Shared library management across services
+- Automated build, lint, and test workflows using Taskfile
+- Git-aware CI that runs only for affected services
+- Scaffolding for tests, coverage, and future mock generation
 
 ## Project Structure
 
@@ -26,12 +31,14 @@ monorepo/
 ## Services
 
 ### Service A: Billing API
+
 - HTTP API for invoice management
 - Uses module-a for billing calculations
 - Integrates with payment processing
 - Runs on port 8080
 
 ### Service B: Payment Webhook Handler
+
 - Processes payment gateway callbacks
 - Uses module-b for payment operations
 - Logs transaction results
@@ -42,6 +49,7 @@ monorepo/
 ### Service A: Billing API
 
 #### Create an Invoice
+
 ```sh
 curl --request POST \
   --url http://localhost:8080/api/invoices \
@@ -55,6 +63,7 @@ curl --request POST \
 ```
 
 #### Get an Invoice
+
 ```sh
 curl --request GET \
   --url http://localhost:8080/api/invoices/inv_123
@@ -63,6 +72,7 @@ curl --request GET \
 ### Service B: Payment Webhook Handler
 
 #### Send a Payment Webhook Notification
+
 ```sh
 curl --request POST \
   --url http://localhost:8081/api/webhooks/payment \
@@ -78,32 +88,38 @@ curl --request POST \
 ## Shared Libraries
 
 ### Module A: Billing Helpers
+
 - Billing calculation utilities
 - Depends on module-b for payments
 - Used by Service A
 
 ### Module B: Payment SDK
+
 - Payment gateway integration
 - Used by both services
 - Provides payment processing functionality
 
 ### Logger
+
 - Shared logging utilities
 - Used across all services and modules
 - Provides consistent logging format
 
 ### DB
+
 - Database access utilities
 - Common database operations
 - Connection pooling and management
 
 ## Development
 
-This is a demonstration project and not intended for production use. The code contains placeholder implementations to illustrate structure and relationships. 
+This is a demonstration project and not intended for production use. The code contains placeholder implementations to
+illustrate structure and relationships.
 
 ## Available Tasks
 
-The project uses [Task](https://taskfile.dev/) for managing common development tasks. The tasks are convention-based and will automatically discover any services added to the project.
+The project uses [Task](https://taskfile.dev/) for managing common development tasks. The tasks are convention-based and
+will automatically discover any services added to the project.
 
 ### Development Setup
 
@@ -160,11 +176,13 @@ task deps-graph
 ```
 
 This will show a graph of internal dependencies in the format:
+
 ```
 package -> dependency1, dependency2, ...
 ```
 
 For example:
+
 ```
 pkg/module-a/billing -> pkg/logger, pkg/module-b/payment
 pkg/module-b/payment -> pkg/logger
@@ -172,6 +190,7 @@ services/service-a/api/handlers -> pkg/logger, pkg/module-a/billing
 ```
 
 This helps visualize how packages depend on each other within the monorepo, making it easier to:
+
 - Understand the architecture
 - Identify potential circular dependencies
 - Plan refactoring efforts

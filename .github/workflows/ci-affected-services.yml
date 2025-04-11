@@ -1,4 +1,4 @@
-name: Affected CI
+name: Affected Services CI
 
 on:
   push:
