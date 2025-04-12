@@ -45,7 +45,7 @@ func New(logger logger.Logger, payment payment.PaymentGateway) BillingService {
 func (s *Service) CreateInvoice(ctx context.Context, amount float64, currency string) (*Invoice, error) {
 	s.logger.Info("Creating invoice", zap.Float64("amount", amount))
 	return &Invoice{
-		ID:        "inv_123",
+		ID:        "inv_1234",
 		Amount:    amount,
 		Currency:  currency,
 		Status:    "pending",
