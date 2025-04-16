@@ -1,0 +1,29 @@
+monorepo/
+├── .github/workflows
+├── services/         # Microservices logic
+│  ├── service-a/
+│  │  ├── cmd/
+│  │  ├── api/
+│  │  ├── core/
+│  │  ├── sdk/
+│  │  ├── mocks/
+│  │  └── docs/
+│  ├── service-b/
+│  │  ├── cmd/
+│  │  ├── api/
+│  │  ├── core/
+│  │  ├── sdk/
+│  │  ├── mocks/
+│  │  └── docs/
+│  └── service-...
+├── pkg/            # Shared code (auth, logging, utils, etc.)
+│  ├── module-a/
+│  ├── module-b/
+│  ├── logger/
+│  └── db/
+├── scripts/        # One-off tooling or automation scripts
+├── Dockerfile
+├── Taskfile.yml    # Task runner config (or Makefile, etc.)
+├── go.mod
+├── go.sum
+└── README.md
