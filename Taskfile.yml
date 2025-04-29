@@ -8,6 +8,11 @@ vars:
   MODULE_NAME: github.com/nithyanatarajan/monorepo-demo
 
 tasks:
+  default:
+    desc: List all available tasks
+    cmds:
+      - task --list
+
   deps:
     desc: Install development dependencies
     cmds:
@@ -24,6 +29,19 @@ tasks:
       - go test -coverprofile={{.COVERAGE_OUT}} ./...
       - go tool cover -html={{.COVERAGE_OUT}} -o {{.COVERAGE_HTML}}
       - echo "Coverage report generated at {{.COVERAGE_HTML}}"
+
+  test-coverage-service:
+    desc: Run test coverage for a specific service and its dependencies
+    requires:
+      vars: [ SERVICE ]
+    cmds:
+      - |
+        echo "Running test coverage for service {{.SERVICE}} and its dependencies"
+        deps=$(go list -f '{{.ImportPath}}' -deps ./{{.SERVICES_DIR}}/{{.SERVICE}}/... | grep '^{{.MODULE_NAME}}')
+        echo "Dependencies to be tested: $deps"
+        go test -coverprofile={{.COVERAGE_OUT}} $deps
+        go tool cover -html={{.COVERAGE_OUT}} -o {{.COVERAGE_HTML}}
+        echo "Coverage report generated at {{.COVERAGE_HTML}}"
 
   lint:
     desc: Run linter
@@ -82,5 +100,16 @@ tasks:
         echo "Internal Dependency Graph (tab-separated flat list):"
         go list -json ./... | \
         jq -r 'select(.Imports | length > 0) | .ImportPath as $src | .Imports[] | select(startswith("{{.MODULE_NAME}}")) | "\($src)\t\(. )"' | \
+        sed "s|{{.MODULE_NAME}}/||g" | \
+        grep -v "^$"
+
+  deps-graph:display:
+    desc: Show internal dependency graph (flat list)
+    cmds:
+      - |
+        echo "Internal Dependency Graph (flat list):"
+        echo "-------------------------"
+        go list -json ./... | \
+        jq -r 'select(.Imports | length > 0) | .ImportPath as $src | .Imports[] | select(startswith("{{.MODULE_NAME}}")) | "\($src)\t-->\t\(. )"' | \
         sed "s|{{.MODULE_NAME}}/||g" | \
         grep -v "^$"

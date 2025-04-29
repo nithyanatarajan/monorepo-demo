@@ -21,6 +21,7 @@ task
 
 ```shell
 task build-service SERVICE=service-a
+ls -al bin
 ```
 
 2b. Unified Testing and Coverage
@@ -30,10 +31,18 @@ task test-coverage
 open coverage.html
 ```
 
-2c. Dependency graph
+2c. Targetted Testing and Coverage
+
+```shell
+task test-coverage-service SERVICE=service-a
+open coverage.html
+```
+
+2d. Dependency graph
 
 ```shell
 task deps-graph
+task deps-graph:display
 ```
 
 ## 3. Dependency-Aware CI in Action
