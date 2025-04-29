@@ -2,6 +2,8 @@ package billing
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/nithyanatarajan/monorepo-demo/pkg/logger"
@@ -44,8 +46,9 @@ func New(logger logger.Logger, payment payment.PaymentGateway) BillingService {
 // CreateInvoice creates a new invoice
 func (s *Service) CreateInvoice(ctx context.Context, amount float64, currency string) (*Invoice, error) {
 	s.logger.Info("Creating invoice", zap.Float64("amount", amount))
+	invoiceID := fmt.Sprintf("%d", rand.Intn(99999)+1)
 	return &Invoice{
-		ID:        "inv_1234",
+		ID:        invoiceID,
 		Amount:    amount,
 		Currency:  currency,
 		Status:    "pending",
